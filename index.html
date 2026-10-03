@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LIGHT SHIFT</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:#eee;font-family:sans-serif;touch-action:none}
+#game{height:100%;display:flex;flex-direction:column}
+#scene{flex:1;position:relative;min-height:0}
+canvas{width:100%;height:100%;display:block}
+#title{position:absolute;top:15px;left:15px}
+#title b{font-size:20px;letter-spacing:4px}
+#title small{display:block;color:#999;margin-top:4px}
+#controls{height:180px;background:#111;border-top:1px solid #333;position:relative}
+#stick{position:absolute;left:25px;bottom:25px;width:125px;height:125px;border:2px solid #666;border-radius:50%;background:#ffffff11}
+#knob{position:absolute;width:52px;height:52px;left:34px;top:34px;border-radius:50%;background:#ddd}
+#light{position:absolute;right:28px;bottom:35px;width:105px;height:105px;border-radius:50%;border:2px solid #aaa;background:#ddd;color:#111;font-weight:bold}
+#hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#222;padding:12px 18px;border:1px solid #555;border-radius:10px;text-align:center;white-space:nowrap}
+#win{display:none;position:absolute;inset:0;background:#000d;align-items:center;justify-content:center;flex-direction:column;font-size:28px;letter-spacing:5px}
+#win button{margin-top:20px;padding:10px 22px;background:#222;color:white;border:1px solid #777;border-radius:8px}
+</style>
+</head>
+<body>
+
+<div id="game">
+<div id="scene">
+<canvas id="c"></canvas>
+<div id="title"><b>LIGHT SHIFT</b><small>STAGE 01　影をスイッチへ</small></div>
+<div id="hint">左で移動<br>右のLIGHTで光を回す</div>
+<div id="win">CLEAR<button onclick="location.reload()">もう一度</button></div>
+</div>
+
+<div id="controls">
+<div id="stick"><div id="knob"></div></div>
+<button id="light">LIGHT<br>↻</button>
+</div>
+</div>
+
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+let W,H,d=1;
+function size(){
+ d=Math.min(devicePixelRatio||1,2);
+ W=innerWidth;H=document.getElementById("scene").clientHeight;
+ c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0);
+}
+addEventListener("resize",size);size();
+
+let p={x:0,y:0},joyX=0,joyY=0,angle=-Math.PI/2,win=false;
+let light={x:0,y:0},sw={x:0,y:0};
+
+function reset(){
+ p.x=W*.3;p.y=H*.62;
+ sw.x=W*.7;sw.y=H*.27;
+}
+reset();
+
+const stick=document.getElementById("stick");
+const knob=document.getElementById("knob");
+let active=false;
+
+function joy(e){
+ let r=stick.getBoundingClientRect();
+ let dx=e.clientX-(r.left+r.width/2);
+ let dy=e.clientY-(r.top+r.height/2);
+ let m=Math.hypot(dx,dy),max=47;
+ if(m>max){dx=dx/m*max;dy=dy/m*max}
+ joyX=dx/max;joyY=dy/max;
+ knob.style.transform=`translate(${dx}px,${dy}px)`;
+}
+
+stick.onpointerdown=e=>{
+ active=true;stick.setPointerCapture(e.pointerId);joy(e);
+};
+stick.onpointermove=e=>{if(active)joy(e)};
+stick.onpointerup=stop;
+stick.onpointercancel=stop;
+
+function stop(){
+ active=false;joyX=joyY=0;
+ knob.style.transform="translate(0,0)";
+}
+
+document.getElementById("light").onpointerdown=e=>{
+ e.preventDefault();
+ angle+=Math.PI/4;
+};
+
+setTimeout(()=>document.getElementById("hint").style.display="none",3000);
+
+function update(){
+ if(!win){
+  p.x+=joyX*3;
+  p.y+=joyY*3;
+  p.x=Math.max(30,Math.min(W-30,p.x));
+  p.y=Math.max(70,Math.min(H-30,p.y));
+
+  light.x=p.x+Math.cos(angle)*75;
+  light.y=p.y+Math.sin(angle)*75;
+
+  let wall=W*.82;
+  let dx=p.x-light.x,dy=p.y-light.y;
+  let t=(wall-light.x)/(dx||.001);
+  let sy=light.y+dy*t;
+
+  if(Math.hypot(wall-sw.x,sy-sw.y)<40){
+   win=true;
+   document.getElementById("win").style.display="flex";
+  }
+ }
+ draw();
+ requestAnimationFrame(update);
+}
+
+function draw(){
+ x.fillStyle="#181818";
+ x.fillRect(0,0,W,H);
+
+ x.fillStyle="#222";
+ x.fillRect(0,55,W,H);
+
+ x.strokeStyle="#2d2d2d";
+ for(let a=0;a<W;a+=42){
+  x.beginPath();x.moveTo(a,55);x.lineTo(a,H);x.stroke();
+ }
+ for(let a=55;a<H;a+=42){
+  x.beginPath();x.moveTo(0,a);x.lineTo(W,a);x.stroke();
+ }
+
+ let wall=W*.82;
+ x.fillStyle="#0d0d0d";
+ x.fillRect(wall,55,W-wall,H);
+
+ /* スイッチ */
+ x.beginPath();
+ x.arc(sw.x,sw.y,24,0,Math.PI*2);
+ x.fillStyle="#aaa";x.fill();
+
+ x.beginPath();
+ x.arc(sw.x,sw.y,10,0,Math.PI*2);
+ x.fillStyle="#222";x.fill();
+
+ /* 光 */
+ let r=Math.min(W*.45,210);
+ let g=x.createRadialGradient(light.x,light.y,5,light.x,light.y,r);
+ g.addColorStop(0,"#888");
+ g.addColorStop(.4,"#333");
+ g.addColorStop(1,"transparent");
+ x.fillStyle=g;
+ x.beginPath();x.arc(light.x,light.y,r,0,Math.PI*2);x.fill();
+
+ /* 影 */
+ let dx=p.x-light.x,dy=p.y-light.y;
+ let t=(wall-light.x)/(dx||.001);
+ let sx=wall,sy=light.y+dy*t;
+
+ x.fillStyle="#030303";
+ x.beginPath();x.ellipse(sx,sy,28,55,0,0,Math.PI*2);x.fill();
+ x.beginPath();x.arc(sx,sy-60,20,0,Math.PI*2);x.fill();
+
+ /* プレイヤー */
+ x.fillStyle="#ddd";
+ x.beginPath();x.arc(p.x,p.y,18,0,Math.PI*2);x.fill();
+
+ x.fillStyle="#999";
+ x.fillRect(p.x-12,p.y+13,24,28);
+
+ /* ライト */
+ x.fillStyle="#fff";
+ x.beginPath();x.arc(light.x,light.y,9,0,Math.PI*2);x.fill();
+}
+
+update();
+</script>
+</body>
+</html>
