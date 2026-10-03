@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
 <title>LIGHT SHIFT</title>
 
 <style>
 *{
   box-sizing:border-box;
+  -webkit-user-select:none;
+  user-select:none;
   touch-action:none;
 }
 
@@ -18,123 +19,197 @@ html,body{
   height:100%;
   overflow:hidden;
   background:#111;
-  color:white;
+  color:#eee;
   font-family:Arial,sans-serif;
 }
 
 #game{
+  position:relative;
   width:100%;
   height:100%;
-  display:flex;
-  flex-direction:column;
-}
-
-#scene{
-  position:relative;
-  flex:1;
+  max-width:700px;
+  margin:auto;
   overflow:hidden;
   background:#202020;
 }
 
-canvas{
-  width:100%;
-  height:100%;
-  display:block;
+#top{
+  height:100px;
+  padding:28px 20px 0;
+  background:#151515;
+  border-bottom:1px solid #333;
 }
 
 #title{
-  position:absolute;
-  top:18px;
-  left:20px;
-  pointer-events:none;
-}
-
-#title b{
   font-size:28px;
-  letter-spacing:5px;
+  font-weight:bold;
+  letter-spacing:7px;
 }
 
-#title span{
-  display:block;
+#stage{
   margin-top:8px;
+  font-size:15px;
   color:#999;
-  font-size:14px;
 }
 
-/* CLEAR画面 */
-#clear{
+#field{
   position:absolute;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  background:rgba(0,0,0,.88);
-  z-index:10;
+  top:100px;
+  left:0;
+  right:0;
+  bottom:280px;
+  overflow:hidden;
+  background:
+    linear-gradient(#292929 1px,transparent 1px),
+    linear-gradient(90deg,#292929 1px,transparent 1px);
+  background-size:60px 60px;
 }
 
-#clear h1{
-  font-size:48px;
-  letter-spacing:8px;
-  margin:0;
+#light{
+  position:absolute;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 35px 15px rgba(255,255,255,.35);
+  z-index:5;
 }
 
-#clear p{
-  color:#aaa;
-  font-size:14px;
-  margin:15px 0 5px;
+#player{
+  position:absolute;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:#eee;
+  z-index:4;
 }
 
-#clear button{
-  margin-top:20px;
-  padding:13px 32px;
-  font-size:16px;
-  color:white;
-  background:#222;
-  border:1px solid #888;
-  border-radius:8px;
+#shadow{
+  position:absolute;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:#050505;
+  z-index:2;
+  transition:left .08s,top .08s;
+}
+
+#target{
+  position:absolute;
+  width:78px;
+  height:78px;
+  border:3px solid #aaa;
+  border-radius:50%;
+  z-index:1;
+}
+
+#target:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:10px;
+  height:10px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:#aaa;
 }
 
 #controls{
-  height:180px;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:280px;
   background:#111;
-  border-top:1px solid #444;
-  position:relative;
+  border-top:1px solid #333;
 }
 
 #stick{
   position:absolute;
-  left:35px;
-  top:27px;
-  width:125px;
-  height:125px;
-  border:2px solid #666;
+  left:45px;
+  top:55px;
+  width:150px;
+  height:150px;
+  border:3px solid #666;
   border-radius:50%;
-  background:#222;
 }
 
 #knob{
   position:absolute;
-  width:54px;
-  height:54px;
-  left:33px;
-  top:33px;
+  left:50%;
+  top:50%;
+  width:65px;
+  height:65px;
+  transform:translate(-50%,-50%);
   border-radius:50%;
   background:#ddd;
 }
 
-#lightButton{
+#lightBtn{
   position:absolute;
-  right:35px;
-  top:27px;
-  width:125px;
-  height:125px;
+  right:45px;
+  top:55px;
+  width:150px;
+  height:150px;
   border-radius:50%;
-  border:2px solid #888;
+  border:3px solid #aaa;
   background:#ddd;
   color:#111;
+  font-size:18px;
   font-weight:bold;
+}
+
+#lightBtn span{
+  display:block;
+  font-size:22px;
+  margin-top:5px;
+}
+
+#restart{
+  position:absolute;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  padding:8px 18px;
+  border:1px solid #555;
+  border-radius:20px;
+  background:#222;
+  color:#aaa;
+  font-size:13px;
+}
+
+#message{
+  display:none;
+  position:absolute;
+  inset:0;
+  z-index:20;
+  background:rgba(0,0,0,.82);
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+}
+
+#message h2{
+  font-size:38px;
+  letter-spacing:7px;
+  margin:0 0 10px;
+}
+
+#message p{
+  color:#aaa;
+  margin:0 0 28px;
   font-size:16px;
+}
+
+#next{
+  padding:15px 45px;
+  border:0;
+  border-radius:30px;
+  background:#eee;
+  color:#111;
+  font-size:18px;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -143,27 +218,16 @@ canvas{
 
 <div id="game">
 
-  <div id="scene">
+  <div id="top">
+    <div id="title">LIGHT SHIFT</div>
+    <div id="stage">STAGE 01　影をターゲットへ</div>
+  </div>
 
-    <canvas id="canvas"></canvas>
-
-    <div id="title">
-      <b>LIGHT SHIFT</b>
-      <span>STAGE 01　影をスイッチへ</span>
-    </div>
-
-    <div id="clear">
-
-      <h1>CLEAR</h1>
-
-      <p>影がスイッチに重なった</p>
-
-      <button id="restart">
-        もう一度
-      </button>
-
-    </div>
-
+  <div id="field">
+    <div id="light"></div>
+    <div id="target"></div>
+    <div id="shadow"></div>
+    <div id="player"></div>
   </div>
 
   <div id="controls">
@@ -172,212 +236,430 @@ canvas{
       <div id="knob"></div>
     </div>
 
-    <button id="lightButton">
-      LIGHT<br>↻
+    <button id="lightBtn">
+      LIGHT
+      <span>↻</span>
     </button>
 
+    <button id="restart">RESTART</button>
+
+  </div>
+
+  <div id="message">
+    <h2 id="messageText">CLEAR</h2>
+    <p>影がターゲットに重なった</p>
+    <button id="next">NEXT</button>
   </div>
 
 </div>
 
-
 <script>
 
-const canvas =
-  document.getElementById("canvas");
+const field=document.getElementById("field");
+const player=document.getElementById("player");
+const shadow=document.getElementById("shadow");
+const light=document.getElementById("light");
+const target=document.getElementById("target");
 
-const ctx =
-  canvas.getContext("2d");
+const knob=document.getElementById("knob");
+const stick=document.getElementById("stick");
+const lightBtn=document.getElementById("lightBtn");
+const restart=document.getElementById("restart");
 
-let W = 0;
-let H = 0;
+const message=document.getElementById("message");
+const messageText=document.getElementById("messageText");
+const next=document.getElementById("next");
+const stageText=document.getElementById("stage");
 
 
-/* =====================
-   サイズ
-===================== */
+/* =========================
+   ステージ
+========================= */
 
-function resize(){
+const stages=[
 
-  W = canvas.clientWidth;
-  H = canvas.clientHeight;
+  {
+    player:[0.28,0.50],
+    target:[0.78,0.72],
+    light:[
+      [0.08,0.50],
+      [0.92,0.50],
+      [0.50,0.10],
+      [0.50,0.90]
+    ]
+  },
 
-  const dpr =
-    Math.min(
-      window.devicePixelRatio || 1,
-      2
-    );
+  {
+    player:[0.50,0.30],
+    target:[0.20,0.75],
+    light:[
+      [0.50,0.05],
+      [0.95,0.50],
+      [0.50,0.95],
+      [0.05,0.50]
+    ]
+  },
 
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-
-  ctx.setTransform(
-    dpr,
-    0,
-    0,
-    dpr,
-    0,
-    0
-  );
-
-  /*
-    画面サイズが変わっても
-    ゲーム位置を再調整
-  */
-
-  if(!gameStarted){
-    setup();
+  {
+    player:[0.25,0.70],
+    target:[0.78,0.25],
+    light:[
+      [0.05,0.10],
+      [0.95,0.10],
+      [0.95,0.90],
+      [0.05,0.90]
+    ]
   }
+
+];
+
+
+/* =========================
+   状態
+========================= */
+
+let stage=0;
+let lightIndex=0;
+
+let dx=0;
+let dy=0;
+
+let dragging=false;
+
+let hasMoved=false;
+let hasChangedLight=false;
+
+let cleared=false;
+
+
+/* =========================
+   位置
+========================= */
+
+function setPosition(el,x,y){
+
+  el.style.left=(x-el.offsetWidth/2)+"px";
+  el.style.top=(y-el.offsetHeight/2)+"px";
+
 }
 
-window.addEventListener(
-  "resize",
-  resize
-);
 
-
-/* =====================
-   オブジェクト
-===================== */
-
-const player = {
-  x:0,
-  y:0
-};
-
-const shadow = {
-  x:0,
-  y:0
-};
-
-const target = {
-  x:0,
-  y:0
-};
-
-const light = {
-  x:0,
-  y:0
-};
-
-
-let cleared = false;
-let gameStarted = false;
-
-
-/* =====================
-   初期化
-===================== */
+/* =========================
+   ステージ開始
+========================= */
 
 function setup(){
 
-  player.x = W * 0.38;
-  player.y = H * 0.60;
+  cleared=false;
 
-  /*
-    影はプレイヤーより上
-  */
+  hasMoved=false;
+  hasChangedLight=false;
 
-  shadow.x = W * 0.78;
-  shadow.y = player.y - 120;
+  message.style.display="none";
 
-  /*
-    スイッチ
-  */
+  lightIndex=0;
 
-  target.x = W * 0.78;
-  target.y = H * 0.28;
+  const w=field.clientWidth;
+  const h=field.clientHeight;
 
-  /*
-    ライト
-  */
+  const s=stages[stage];
 
-  light.x = W * 0.18;
-  light.y = player.y;
-
-  cleared = false;
-  gameStarted = true;
-
-  document
-    .getElementById("clear")
-    .style.display = "none";
-
-  joyY = 0;
-
-  knob.style.transform =
-    "translateY(0)";
-}
-
-
-/* =====================
-   完全リスタート
-===================== */
-
-function restartGame(){
-
-  setup();
-
-}
-
-
-/* =====================
-   ジョイスティック
-===================== */
-
-const stick =
-  document.getElementById("stick");
-
-const knob =
-  document.getElementById("knob");
-
-let active = false;
-let joyY = 0;
-
-
-function moveStick(e){
-
-  const r =
-    stick.getBoundingClientRect();
-
-  let y =
-    e.clientY -
-    (r.top + r.height / 2);
-
-  const max = 45;
-
-  y = Math.max(
-    -max,
-    Math.min(max,y)
+  setPosition(
+    player,
+    w*s.player[0],
+    h*s.player[1]
   );
 
-  joyY = y / max;
+  setPosition(
+    target,
+    w*s.target[0],
+    h*s.target[1]
+  );
 
-  knob.style.transform =
-    `translateY(${y}px)`;
+  setLight();
+
+  updateShadow();
+
+  stageText.textContent=
+    "STAGE "+
+    String(stage+1).padStart(2,"0")+
+    "　影をターゲットへ";
+
+  knob.style.left="50%";
+  knob.style.top="50%";
+
+}
+
+
+/* =========================
+   光
+========================= */
+
+function setLight(){
+
+  const w=field.clientWidth;
+  const h=field.clientHeight;
+
+  const p=stages[stage].light[lightIndex];
+
+  setPosition(
+    light,
+    w*p[0],
+    h*p[1]
+  );
+
+}
+
+
+/* =========================
+   影
+========================= */
+
+function updateShadow(){
+
+  const px=
+    player.offsetLeft+
+    player.offsetWidth/2;
+
+  const py=
+    player.offsetTop+
+    player.offsetHeight/2;
+
+  const lx=
+    light.offsetLeft+
+    light.offsetWidth/2;
+
+  const ly=
+    light.offsetTop+
+    light.offsetHeight/2;
+
+
+  let vx=px-lx;
+  let vy=py-ly;
+
+  const len=Math.sqrt(vx*vx+vy*vy)||1;
+
+  vx/=len;
+  vy/=len;
+
+
+  /*
+    光と反対側へ影を伸ばす
+  */
+
+  const distance=150;
+
+  let sx=px+vx*distance;
+  let sy=py+vy*distance;
+
+
+  sx=Math.max(
+    30,
+    Math.min(field.clientWidth-30,sx)
+  );
+
+  sy=Math.max(
+    30,
+    Math.min(field.clientHeight-30,sy)
+  );
+
+
+  setPosition(shadow,sx,sy);
+
+
+  checkClear();
+
+}
+
+
+/* =========================
+   クリア判定
+========================= */
+
+function checkClear(){
+
+  if(cleared)return;
+
+  /*
+    開始直後は絶対にクリアさせない
+  */
+
+  if(!hasMoved && !hasChangedLight)return;
+
+
+  const sx=
+    shadow.offsetLeft+
+    shadow.offsetWidth/2;
+
+  const sy=
+    shadow.offsetTop+
+    shadow.offsetHeight/2;
+
+
+  const tx=
+    target.offsetLeft+
+    target.offsetWidth/2;
+
+  const ty=
+    target.offsetTop+
+    target.offsetHeight/2;
+
+
+  const distance=
+    Math.hypot(sx-tx,sy-ty);
+
+
+  /*
+    影の中心がターゲット中心に
+    38px以内ならクリア
+  */
+
+  if(distance<38){
+
+    cleared=true;
+
+    if(stage===stages.length-1){
+
+      messageText.textContent="ALL CLEAR";
+      next.textContent="PLAY AGAIN";
+
+    }else{
+
+      messageText.textContent="CLEAR";
+      next.textContent="NEXT";
+
+    }
+
+    message.style.display="flex";
+
+  }
+
+}
+
+
+/* =========================
+   プレイヤー移動
+========================= */
+
+function movePlayer(){
+
+  if(!cleared){
+
+    const speed=3.5;
+
+    let x=
+      player.offsetLeft+
+      dx*speed;
+
+    let y=
+      player.offsetTop+
+      dy*speed;
+
+
+    x=Math.max(
+      5,
+      Math.min(
+        field.clientWidth-player.offsetWidth-5,
+        x
+      )
+    );
+
+    y=Math.max(
+      5,
+      Math.min(
+        field.clientHeight-player.offsetHeight-5,
+        y
+      )
+    );
+
+
+    if(dx!==0 || dy!==0){
+
+      hasMoved=true;
+
+    }
+
+
+    player.style.left=x+"px";
+    player.style.top=y+"px";
+
+
+    updateShadow();
+
+  }
+
+
+  requestAnimationFrame(movePlayer);
+
+}
+
+
+/* =========================
+   ジョイスティック
+========================= */
+
+function setStick(e){
+
+  const r=stick.getBoundingClientRect();
+
+  let x=
+    e.clientX-
+    r.left-
+    r.width/2;
+
+  let y=
+    e.clientY-
+    r.top-
+    r.height/2;
+
+
+  const max=55;
+
+  const len=Math.hypot(x,y);
+
+  if(len>max){
+
+    x=x/len*max;
+    y=y/len*max;
+
+  }
+
+
+  dx=x/max;
+  dy=y/max;
+
+
+  knob.style.left=
+    (50+x/r.width*100)+"%";
+
+  knob.style.top=
+    (50+y/r.height*100)+"%";
+
 }
 
 
 stick.addEventListener(
   "pointerdown",
-  e => {
+  e=>{
 
-    active = true;
+    dragging=true;
 
-    stick.setPointerCapture(
-      e.pointerId
-    );
+    stick.setPointerCapture(e.pointerId);
 
-    moveStick(e);
+    setStick(e);
+
   }
 );
 
 
 stick.addEventListener(
   "pointermove",
-  e => {
+  e=>{
 
-    if(active){
-      moveStick(e);
+    if(dragging){
+
+      setStick(e);
+
     }
 
   }
@@ -386,12 +668,14 @@ stick.addEventListener(
 
 function stopStick(){
 
-  active = false;
+  dragging=false;
 
-  joyY = 0;
+  dx=0;
+  dy=0;
 
-  knob.style.transform =
-    "translateY(0)";
+  knob.style.left="50%";
+  knob.style.top="50%";
+
 }
 
 
@@ -406,391 +690,96 @@ stick.addEventListener(
 );
 
 
-/* =====================
-   ライトボタン
-===================== */
+/* =========================
+   LIGHTボタン
+========================= */
 
-document
-  .getElementById("lightButton")
-  .addEventListener(
-    "pointerdown",
-    () => {
+lightBtn.addEventListener(
+  "click",
+  ()=>{
 
-      /*
-        今回はゲームの基本操作を
-        分かりやすくするため、
-        ボタンを押しても
-        プレイヤー位置は変えない。
-      */
+    if(cleared)return;
 
-    }
-  );
+    hasChangedLight=true;
 
+    lightIndex++;
 
-/* =====================
-   ゲーム更新
-===================== */
+    if(
+      lightIndex>=
+      stages[stage].light.length
+    ){
 
-function update(){
-
-  if(!cleared){
-
-    /*
-      上下移動
-    */
-
-    player.y += joyY * 4;
-
-
-    /*
-      画面外に出ない
-    */
-
-    player.y =
-      Math.max(
-        90,
-        Math.min(
-          H - 50,
-          player.y
-        )
-      );
-
-
-    /*
-      ライト連動
-    */
-
-    light.y =
-      player.y;
-
-
-    /*
-      影連動
-
-      プレイヤーより
-      120px上
-    */
-
-    shadow.y =
-      player.y - 120;
-
-
-    /*
-      影とスイッチの距離
-    */
-
-    const distance =
-      Math.abs(
-        shadow.y -
-        target.y
-      );
-
-
-    /*
-      クリア判定
-
-      少し余裕を持たせる
-    */
-
-    if(distance < 45){
-
-      cleared = true;
-
-      document
-        .getElementById("clear")
-        .style.display = "flex";
+      lightIndex=0;
 
     }
 
+    setLight();
+
+    updateShadow();
+
   }
+);
 
 
-  draw();
+/* =========================
+   RESTART
+========================= */
 
-  requestAnimationFrame(update);
-}
+restart.addEventListener(
+  "click",
+  ()=>{
 
+    setup();
 
-/* =====================
-   描画
-===================== */
-
-function draw(){
-
-  ctx.clearRect(
-    0,
-    0,
-    W,
-    H
-  );
-
-
-  /*
-    背景
-  */
-
-  ctx.fillStyle =
-    "#202020";
-
-  ctx.fillRect(
-    0,
-    0,
-    W,
-    H
-  );
-
-
-  /*
-    グリッド
-  */
-
-  ctx.strokeStyle =
-    "#2d2d2d";
-
-  ctx.lineWidth = 1;
-
-
-  for(
-    let x=0;
-    x<W;
-    x+=45
-  ){
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-      x,
-      55
-    );
-
-    ctx.lineTo(
-      x,
-      H
-    );
-
-    ctx.stroke();
   }
+);
 
 
-  for(
-    let y=55;
-    y<H;
-    y+=45
-  ){
+/* =========================
+   NEXT
+========================= */
 
-    ctx.beginPath();
+next.addEventListener(
+  "click",
+  ()=>{
 
-    ctx.moveTo(
-      0,
-      y
-    );
+    if(
+      stage===
+      stages.length-1
+    ){
 
-    ctx.lineTo(
-      W,
-      y
-    );
+      stage=0;
 
-    ctx.stroke();
+    }else{
+
+      stage++;
+
+    }
+
+    setup();
+
   }
+);
 
 
-  /*
-    光
-  */
+/* =========================
+   画面サイズ変更
+========================= */
 
-  const gradient =
-    ctx.createRadialGradient(
-      light.x,
-      light.y,
-      5,
-      light.x,
-      light.y,
-      190
-    );
+window.addEventListener(
+  "resize",
+  ()=>{
+    setup();
+  }
+);
 
 
-  gradient.addColorStop(
-    0,
-    "rgba(255,255,255,.45)"
-  );
-
-  gradient.addColorStop(
-    .4,
-    "rgba(255,255,255,.12)"
-  );
-
-  gradient.addColorStop(
-    1,
-    "rgba(255,255,255,0)"
-  );
-
-
-  ctx.fillStyle =
-    gradient;
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    light.x,
-    light.y,
-    190,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-
-  /*
-    スイッチ
-  */
-
-  ctx.beginPath();
-
-  ctx.arc(
-    target.x,
-    target.y,
-    32,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fillStyle =
-    "#ddd";
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    target.x,
-    target.y,
-    12,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fillStyle =
-    "#222";
-
-  ctx.fill();
-
-
-  /*
-    影
-  */
-
-  ctx.fillStyle =
-    "#000";
-
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    shadow.x,
-    shadow.y,
-    32,
-    65,
-    0,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    shadow.x,
-    shadow.y - 68,
-    22,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-
-  /*
-    プレイヤー
-  */
-
-  ctx.fillStyle =
-    "#ddd";
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    player.x,
-    player.y,
-    20,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-
-  ctx.fillStyle =
-    "#aaa";
-
-
-  ctx.fillRect(
-    player.x - 13,
-    player.y + 17,
-    26,
-    30
-  );
-
-
-  /*
-    ライト本体
-  */
-
-  ctx.fillStyle =
-    "#fff";
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    light.x,
-    light.y,
-    9,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-}
-
-
-/* =====================
-   再プレイボタン
-===================== */
-
-document
-  .getElementById("restart")
-  .addEventListener(
-    "click",
-    restartGame
-  );
-
-
-/* =====================
-   スタート
-===================== */
-
-resize();
+/* =========================
+   START
+========================= */
 
 setup();
-
-update();
+movePlayer();
 
 </script>
 
