@@ -3,398 +3,502 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>LIGHT SHIFT</title>
+
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:#eee;font-family:sans-serif;touch-action:none}
-#game{height:100%;display:flex;flex-direction:column}
-#scene{position:relative;flex:1;min-height:0}
-canvas{width:100%;height:100%;display:block}
-#title{position:absolute;top:15px;left:15px}
-#title b{font-size:20px;letter-spacing:4px}
-#title small{display:block;color:#999;margin-top:4px}
-#controls{height:180px;background:#111;border-top:1px solid #333;position:relative}
-#stick{position:absolute;left:25px;bottom:25px;width:125px;height:125px;border:2px solid #666;border-radius:50%;background:#ffffff11}
-#knob{position:absolute;width:52px;height:52px;left:34px;top:34px;border-radius:50%;background:#ddd}
-#light{position:absolute;right:28px;bottom:35px;width:105px;height:105px;border-radius:50%;border:2px solid #aaa;background:#ddd;color:#111;font-weight:bold}
-#hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#222;padding:12px 18px;border:1px solid #555;border-radius:10px;text-align:center;white-space:nowrap}
-#win{display:none;position:absolute;inset:0;background:#000d;align-items:center;justify-content:center;flex-direction:column;font-size:30px;letter-spacing:6px}
-#win button{margin-top:20px;padding:10px 25px;background:#222;color:white;border:1px solid #777;border-radius:8px}
+*{
+  box-sizing:border-box;
+  touch-action:none;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111;
+  color:white;
+  font-family:Arial,sans-serif;
+}
+
+#game{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+#scene{
+  position:relative;
+  flex:1;
+  overflow:hidden;
+  background:#202020;
+}
+
+canvas{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+#title{
+  position:absolute;
+  top:18px;
+  left:20px;
+  pointer-events:none;
+}
+
+#title b{
+  font-size:28px;
+  letter-spacing:5px;
+}
+
+#title span{
+  display:block;
+  margin-top:8px;
+  color:#999;
+  font-size:14px;
+}
+
+#clear{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  background:rgba(0,0,0,.85);
+  z-index:10;
+}
+
+#clear h1{
+  font-size:48px;
+  letter-spacing:8px;
+  margin:0;
+}
+
+#clear button{
+  margin-top:25px;
+  padding:12px 30px;
+  font-size:16px;
+  color:white;
+  background:#222;
+  border:1px solid #888;
+  border-radius:8px;
+}
+
+#controls{
+  height:180px;
+  background:#111;
+  border-top:1px solid #444;
+  position:relative;
+}
+
+#stick{
+  position:absolute;
+  left:35px;
+  top:27px;
+  width:125px;
+  height:125px;
+  border:2px solid #666;
+  border-radius:50%;
+  background:#222;
+}
+
+#knob{
+  position:absolute;
+  width:54px;
+  height:54px;
+  left:33px;
+  top:33px;
+  border-radius:50%;
+  background:#ddd;
+}
+
+#lightButton{
+  position:absolute;
+  right:35px;
+  top:27px;
+  width:125px;
+  height:125px;
+  border-radius:50%;
+  border:2px solid #888;
+  background:#ddd;
+  color:#111;
+  font-weight:bold;
+  font-size:16px;
+}
 </style>
 </head>
 
 <body>
+
 <div id="game">
 
-<div id="scene">
-<canvas id="c"></canvas>
+  <div id="scene">
 
-<div id="title">
-<b>LIGHT SHIFT</b>
-<small>STAGE 01　影をスイッチへ</small>
-</div>
+    <canvas id="canvas"></canvas>
 
-<div id="hint">
-左スティックで上下に動く<br>
-影をスイッチに重ねよう
-</div>
+    <div id="title">
+      <b>LIGHT SHIFT</b>
+      <span>STAGE 01　影をスイッチへ</span>
+    </div>
 
-<div id="win">
-CLEAR
-<button onclick="location.reload()">もう一度</button>
-</div>
-</div>
+    <div id="clear">
+      <h1>CLEAR</h1>
+      <button onclick="location.reload()">もう一度</button>
+    </div>
 
-<div id="controls">
-<div id="stick"><div id="knob"></div></div>
-<button id="light">LIGHT<br>↻</button>
-</div>
+  </div>
+
+  <div id="controls">
+
+    <div id="stick">
+      <div id="knob"></div>
+    </div>
+
+    <button id="lightButton">
+      LIGHT<br>↻
+    </button>
+
+  </div>
 
 </div>
 
 <script>
-const canvas=document.getElementById("c");
-const ctx=canvas.getContext("2d");
 
-let W,H,dpr;
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let W = 0;
+let H = 0;
 
 function resize(){
- dpr=Math.min(devicePixelRatio||1,2);
- W=innerWidth;
- H=document.getElementById("scene").clientHeight;
- canvas.width=W*dpr;
- canvas.height=H*dpr;
- ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  W = canvas.clientWidth;
+  H = canvas.clientHeight;
+
+  const dpr = Math.min(window.devicePixelRatio || 1,2);
+
+  canvas.width = W*dpr;
+  canvas.height = H*dpr;
+
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 
-addEventListener("resize",resize);
+window.addEventListener("resize",resize);
+
 resize();
 
-/* プレイヤー */
-let player={
- x:0,
- y:0
+
+// =====================
+// ゲーム設定
+// =====================
+
+const player = {
+  x:0,
+  y:0
 };
 
-/* スイッチ */
-let target={
- x:0,
- y:0
+const shadow = {
+  x:0,
+  y:0
 };
 
-/* ライト */
-let light={
- x:0,
- y:0
+const target = {
+  x:0,
+  y:0
 };
 
-/* 最初はライトを左に固定 */
-let angle=Math.PI;
+const light = {
+  x:0,
+  y:0
+};
 
-let joyX=0;
-let joyY=0;
-let touching=false;
-let cleared=false;
+let cleared = false;
 
-function reset(){
- player.x=W*.32;
- player.y=H*.55;
 
- target.x=W*.76;
- target.y=H*.30;
+// =====================
+// 初期位置
+// =====================
 
- light.x=player.x-90;
- light.y=player.y;
+function setup(){
+
+  player.x = W * 0.38;
+  player.y = H * 0.60;
+
+  /*
+    影はプレイヤーより上に出る
+  */
+  shadow.x = W * 0.78;
+  shadow.y = player.y - 120;
+
+  /*
+    スイッチ
+  */
+  target.x = W * 0.78;
+  target.y = H * 0.28;
+
+  /*
+    ライト
+  */
+  light.x = W * 0.18;
+  light.y = player.y;
+
 }
 
-reset();
+setup();
 
-/* ジョイスティック */
-const stick=document.getElementById("stick");
-const knob=document.getElementById("knob");
 
-function joystick(e){
+// =====================
+// ジョイスティック
+// =====================
 
- const r=stick.getBoundingClientRect();
+const stick = document.getElementById("stick");
+const knob = document.getElementById("knob");
 
- let dx=e.clientX-(r.left+r.width/2);
- let dy=e.clientY-(r.top+r.height/2);
+let active = false;
+let joyY = 0;
 
- const max=47;
- const len=Math.hypot(dx,dy);
+function moveStick(e){
 
- if(len>max){
-  dx=dx/len*max;
-  dy=dy/len*max;
- }
+  const r = stick.getBoundingClientRect();
 
- joyX=dx/max;
- joyY=dy/max;
+  let y =
+    e.clientY -
+    (r.top + r.height/2);
 
- knob.style.transform=
-  "translate("+dx+"px,"+dy+"px)";
+  const max = 45;
+
+  y = Math.max(-max,Math.min(max,y));
+
+  joyY = y/max;
+
+  knob.style.transform =
+    `translateY(${y}px)`;
 }
 
-stick.onpointerdown=e=>{
- touching=true;
- stick.setPointerCapture(e.pointerId);
- joystick(e);
-};
+stick.addEventListener("pointerdown",e=>{
 
-stick.onpointermove=e=>{
- if(touching) joystick(e);
-};
+  active = true;
 
-function stop(){
- touching=false;
- joyX=0;
- joyY=0;
- knob.style.transform="translate(0,0)";
+  stick.setPointerCapture(e.pointerId);
+
+  moveStick(e);
+
+});
+
+stick.addEventListener("pointermove",e=>{
+
+  if(active){
+    moveStick(e);
+  }
+
+});
+
+function stopStick(){
+
+  active = false;
+  joyY = 0;
+
+  knob.style.transform =
+    "translateY(0)";
 }
 
-stick.onpointerup=stop;
-stick.onpointercancel=stop;
+stick.addEventListener("pointerup",stopStick);
+stick.addEventListener("pointercancel",stopStick);
 
 
-/* ライト回転 */
-document.getElementById("light").onpointerdown=e=>{
- e.preventDefault();
-
- angle+=Math.PI/4;
-
-};
-
-
-/* ヒント */
-setTimeout(()=>{
- document.getElementById("hint").style.display="none";
-},3500);
-
-
-/*
- 影の位置を計算
-
- ライト
-   ↓
- プレイヤー
-   ↓
-  壁
-*/
-
-function getShadow(){
-
- const wallX=W*.82;
-
- const dx=player.x-light.x;
- const dy=player.y-light.y;
-
- /*
-  今回は右側の壁に影を投影。
-  プレイヤーとライトの関係から
-  壁までの延長線を計算する。
- */
-
- if(dx<=0){
-  return null;
- }
-
- const distance=wallX-light.x;
-
- const ratio=distance/dx;
-
- return {
-  x:wallX,
-  y:light.y+dy*ratio
- };
-}
-
-
-/* ゲーム更新 */
+// =====================
+// ゲーム更新
+// =====================
 
 function update(){
 
- if(!cleared){
+  if(!cleared){
 
-  /*
-   上下移動をメインにする。
-   左右も少しだけ可能。
-  */
+    /*
+      上下だけ動く
+    */
 
-  player.x+=joyX*2.5;
-  player.y+=joyY*3.5;
+    player.y += joyY * 4;
 
-  player.x=Math.max(80,
-   Math.min(W-100,player.x));
+    /*
+      画面外に出ない
+    */
 
-  player.y=Math.max(90,
-   Math.min(H-40,player.y));
+    player.y =
+      Math.max(
+        90,
+        Math.min(H-50,player.y)
+      );
 
-  /*
-   ライトはプレイヤーについてくる。
-  */
 
-  light.x=player.x-90;
-  light.y=player.y;
+    /*
+      ライトはプレイヤーについてくる
+    */
 
-  const shadow=getShadow();
+    light.y = player.y;
 
-  /*
-   ★クリア判定★
 
-   影とスイッチの距離が
-   かなり近ければCLEAR。
+    /*
+      ★重要★
 
-   以前より大幅に判定を甘くしている。
-  */
+      影はプレイヤーの上下に
+      完全に連動する
+    */
 
-  if(shadow){
+    shadow.y = player.y - 120;
 
-   const distance=Math.abs(
-    shadow.y-target.y
-   );
 
-   if(distance<70){
+    /*
+      影とスイッチの距離
+    */
 
-    cleared=true;
+    const distance =
+      Math.abs(shadow.y - target.y);
 
-    document.getElementById(
-     "win"
-    ).style.display="flex";
-   }
+
+    /*
+      かなり簡単なクリア判定
+    */
+
+    if(distance < 45){
+
+      cleared = true;
+
+      document.getElementById("clear")
+        .style.display = "flex";
+    }
+
   }
- }
 
- draw();
+  draw();
 
- requestAnimationFrame(update);
+  requestAnimationFrame(update);
 }
 
 
-/* 描画 */
+// =====================
+// 描画
+// =====================
 
 function draw(){
 
- ctx.fillStyle="#171717";
- ctx.fillRect(0,0,W,H);
+  ctx.clearRect(0,0,W,H);
 
- /* 床 */
- ctx.fillStyle="#222";
- ctx.fillRect(0,55,W,H);
 
- /* グリッド */
- ctx.strokeStyle="#2c2c2c";
- ctx.lineWidth=1;
+  // 背景
 
- for(let x=0;x<W;x+=42){
+  ctx.fillStyle="#202020";
+  ctx.fillRect(0,0,W,H);
+
+
+  // グリッド
+
+  ctx.strokeStyle="#2d2d2d";
+  ctx.lineWidth=1;
+
+  for(let x=0;x<W;x+=45){
+
+    ctx.beginPath();
+    ctx.moveTo(x,55);
+    ctx.lineTo(x,H);
+    ctx.stroke();
+
+  }
+
+  for(let y=55;y<H;y+=45){
+
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(W,y);
+    ctx.stroke();
+
+  }
+
+
+  // =====================
+  // 光
+  // =====================
+
+  const gradient =
+    ctx.createRadialGradient(
+      light.x,
+      light.y,
+      5,
+      light.x,
+      light.y,
+      190
+    );
+
+  gradient.addColorStop(0,"rgba(255,255,255,.45)");
+  gradient.addColorStop(.4,"rgba(255,255,255,.12)");
+  gradient.addColorStop(1,"rgba(255,255,255,0)");
+
+  ctx.fillStyle=gradient;
 
   ctx.beginPath();
-  ctx.moveTo(x,55);
-  ctx.lineTo(x,H);
-  ctx.stroke();
- }
 
- for(let y=55;y<H;y+=42){
+  ctx.arc(
+    light.x,
+    light.y,
+    190,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  // =====================
+  // スイッチ
+  // =====================
 
   ctx.beginPath();
-  ctx.moveTo(0,y);
-  ctx.lineTo(W,y);
-  ctx.stroke();
- }
+
+  ctx.arc(
+    target.x,
+    target.y,
+    32,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fillStyle="#ddd";
+  ctx.fill();
+
+  ctx.beginPath();
+
+  ctx.arc(
+    target.x,
+    target.y,
+    12,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fillStyle="#222";
+  ctx.fill();
 
 
- /* 壁 */
+  // =====================
+  // 影
+  // =====================
 
- const wallX=W*.82;
-
- ctx.fillStyle="#0d0d0d";
-
- ctx.fillRect(
-  wallX,
-  55,
-  W-wallX,
-  H
- );
-
-
- /* スイッチ */
-
- ctx.beginPath();
-
- ctx.arc(
-  target.x,
-  target.y,
-  29,
-  0,
-  Math.PI*2
- );
-
- ctx.fillStyle="#aaa";
- ctx.fill();
-
- ctx.beginPath();
-
- ctx.arc(
-  target.x,
-  target.y,
-  11,
-  0,
-  Math.PI*2
- );
-
- ctx.fillStyle="#222";
- ctx.fill();
-
-
- /* 光 */
-
- const glow=190;
-
- const gradient=ctx.createRadialGradient(
-  light.x,
-  light.y,
-  5,
-  light.x,
-  light.y,
-  glow
- );
-
- gradient.addColorStop(0,"#999");
- gradient.addColorStop(.35,"#444");
- gradient.addColorStop(1,"transparent");
-
- ctx.fillStyle=gradient;
-
- ctx.beginPath();
-
- ctx.arc(
-  light.x,
-  light.y,
-  glow,
-  0,
-  Math.PI*2
- );
-
- ctx.fill();
-
-
- /* 影 */
-
- const shadow=getShadow();
-
- if(shadow){
-
-  ctx.fillStyle="#030303";
+  ctx.fillStyle="#000";
 
   ctx.beginPath();
 
   ctx.ellipse(
-   shadow.x,
-   shadow.y,
-   32,
-   60,
-   0,
-   0,
-   Math.PI*2
+    shadow.x,
+    shadow.y,
+    32,
+    65,
+    0,
+    0,
+    Math.PI*2
   );
 
   ctx.fill();
@@ -402,75 +506,67 @@ function draw(){
   ctx.beginPath();
 
   ctx.arc(
-   shadow.x,
-   shadow.y-63,
-   21,
-   0,
-   Math.PI*2
+    shadow.x,
+    shadow.y-68,
+    22,
+    0,
+    Math.PI*2
   );
 
   ctx.fill();
- }
 
 
- /* プレイヤー */
+  // =====================
+  // プレイヤー
+  // =====================
 
- ctx.fillStyle="#ddd";
+  ctx.fillStyle="#ddd";
 
- ctx.beginPath();
+  ctx.beginPath();
 
- ctx.arc(
-  player.x,
-  player.y,
-  18,
-  0,
-  Math.PI*2
- );
+  ctx.arc(
+    player.x,
+    player.y,
+    20,
+    0,
+    Math.PI*2
+  );
 
- ctx.fill();
+  ctx.fill();
 
- ctx.fillStyle="#999";
+  ctx.fillStyle="#aaa";
 
- ctx.fillRect(
-  player.x-12,
-  player.y+13,
-  24,
-  28
- );
-
-
- /* ライト */
-
- ctx.fillStyle="#fff";
-
- ctx.beginPath();
-
- ctx.arc(
-  light.x,
-  light.y,
-  9,
-  0,
-  Math.PI*2
- );
-
- ctx.fill();
+  ctx.fillRect(
+    player.x-13,
+    player.y+17,
+    26,
+    30
+  );
 
 
- /* スイッチへの目印 */
+  // =====================
+  // ライト本体
+  // =====================
 
- ctx.fillStyle="#888";
+  ctx.fillStyle="#fff";
 
- ctx.font="12px sans-serif";
+  ctx.beginPath();
 
- ctx.fillText(
-  "SHADOW",
-  wallX-55,
-  target.y-42
- );
+  ctx.arc(
+    light.x,
+    light.y,
+    9,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
 }
 
 update();
 
 </script>
+
 </body>
 </html>
